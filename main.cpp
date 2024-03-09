@@ -2,22 +2,23 @@
 #include <iostream>
 #include "Car.hpp"
 #include <vector>
+#include <map>
 #include <cstdlib>
 
 bool inTraffic(Car* car, std::vector<Car*> &cars) {
     bool in = false;
     for (Car * c : cars) {
         if (!(c == car)) {
-            if (car->getType() == RIGHT_LEFT_STRAIGHT && (car->x_pos() >= c->x_pos() && car->x_pos() - 15 <= c->x_pos() + 10)) {
+            if (car->getType() == RIGHT_LEFT_STRAIGHT && (car->x_pos() >= c->x_pos() && car->x_pos() - 15 <= c->x_pos() + 30)) {
                 in = true;
                 break;
-            } else if (car->getType() == LEFT_RIGHT_STRAIGHT && (car->x_pos() <= c->x_pos() && car->x_pos() + 15 > c->x_pos() - 10)) {
+            } else if (car->getType() == LEFT_RIGHT_STRAIGHT && (car->x_pos() <= c->x_pos() && car->x_pos() + 15 >= c->x_pos() - 30)) {
                 in = true;
                 break;
-            } else if (car->getType() == UP_DOWN_STRAIGHT && (car->y_pos() <= c->y_pos() && car->y_pos() + 15 > c->y_pos() - 10)) {
+            } else if (car->getType() == UP_DOWN_STRAIGHT && (car->y_pos() <= c->y_pos() && car->y_pos() + 15 >= c->y_pos() - 30)) {
                 in = true;
                 break;
-            } else if (car->y_pos() >= c->y_pos() && car->y_pos() - 15 <= c->y_pos() + 10) {
+            } else if (car->getType() == DOWN_UP_STRAIGHT && (car->y_pos() >= c->y_pos() && car->y_pos() - 15 <= c->y_pos() + 30)) {
                 in = true;
                 break;
             }
@@ -81,12 +82,39 @@ int main()
     lane4.setFillColor(sf::Color::Yellow);
 
     // traffic lights
+    /*
     sf::RectangleShape lights(sf::Vector2f(56,50));
     lights.setOrigin(28,25);
     lights.setPosition(250,250);
     lights.setOutlineColor(sf::Color::Red);
     lights.setOutlineThickness(3);
     lights.setFillColor(sf::Color::Transparent);
+    */
+    std::map<std::string, sf::RectangleShape> lights;
+    sf::RectangleShape RL_light(sf::Vector2f(3,50));
+    RL_light.setOrigin(-23.5,25);
+    RL_light.setPosition(250, 250);
+    RL_light.setOutlineColor(sf::Color::Red);
+    RL_light.setFillColor(sf::Color::Red);
+    lights.insert({"RL",RL_light});
+    sf::RectangleShape LR_light(sf::Vector2f(3,50));
+    LR_light.setOrigin(25,25);
+    LR_light.setPosition(250, 250);
+    LR_light.setOutlineColor(sf::Color::Red);
+    LR_light.setFillColor(sf::Color::Red);
+    lights.insert({"LR",LR_light});
+    sf::RectangleShape DU_light(sf::Vector2f(50,3));
+    DU_light.setOrigin(25,-23.5);
+    DU_light.setPosition(250, 250);
+    DU_light.setOutlineColor(sf::Color::Red);
+    DU_light.setFillColor(sf::Color::Red);
+    lights.insert({"DU",DU_light});
+    sf::RectangleShape UD_light(sf::Vector2f(50,3));
+    UD_light.setOrigin(25,25);
+    UD_light.setPosition(250, 250);
+    UD_light.setOutlineColor(sf::Color::Red);
+    UD_light.setFillColor(sf::Color::Red);
+    lights.insert({"UD",UD_light});
 
     // cars
     std::vector<Car*> cars;
@@ -111,7 +139,11 @@ int main()
     bool crashed = false;
     
     // lights
-    bool green_light = false;
+    std::map<std::string, bool> green_light;
+    green_light.insert({"RL", false});
+    green_light.insert({"LR", false});
+    green_light.insert({"UD", false});
+    green_light.insert({"DU", false});
 
     // clock
     sf::Clock clock;
@@ -165,11 +197,32 @@ int main()
                 playing = false;
             }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::G && !start_screen) {
-                green_light = !green_light;
-                if (green_light)
-                    lights.setOutlineColor(sf::Color::Green);
+                green_light["DU"] = !green_light["DU"];
+                if (green_light["DU"]) 
+                    lights["DU"].setFillColor(sf::Color::Green);
                 else
-                    lights.setOutlineColor(sf::Color::Red);
+                    lights["DU"].setFillColor(sf::Color::Red);
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::H && !start_screen) {
+                green_light["UD"] = !green_light["UD"];
+                if (green_light["UD"]) 
+                    lights["UD"].setFillColor(sf::Color::Green);
+                else
+                    lights["UD"].setFillColor(sf::Color::Red);
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::J && !start_screen) {
+                green_light["RL"] = !green_light["RL"];
+                if (green_light["RL"]) 
+                    lights["RL"].setFillColor(sf::Color::Green);
+                else
+                    lights["RL"].setFillColor(sf::Color::Red);
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::K && !start_screen) {
+                green_light["LR"] = !green_light["LR"];
+                if (green_light["LR"]) 
+                    lights["LR"].setFillColor(sf::Color::Green);
+                else
+                    lights["LR"].setFillColor(sf::Color::Red);
             }
         }
         window.clear(grass);
@@ -181,8 +234,11 @@ int main()
             cars.clear();
             text.setString("Size: " + std::to_string(cars.size()));
             window.draw(text);
-            green_light = false;
-            lights.setOutlineColor(sf::Color::Red);
+            green_light["DU"] = false;
+            green_light["UD"] = false;
+            green_light["LR"] = false;
+            green_light["RL"] = false;
+            lights["DU"].setOutlineColor(sf::Color::Red);
             //car_pos.setString("in traffic? " + std::to_string(inTraffic(cars[0], cars)));
             window.draw(car_pos);
         }
@@ -190,16 +246,17 @@ int main()
             clock.restart();
         if (playing) {
             if (cars.size() == 0) {
-                Car* c = new Car(DOWN_UP_STRAIGHT, sf::Color::Red);
-                DU_cars.push_back(c);
+                Car* c = new Car(LEFT_RIGHT_STRAIGHT, sf::Color::Red);
+                LR_cars.push_back(c);
                 cars.push_back(c);
-                car_pos.setString("in traffic? " + std::to_string(inTraffic(DU_cars[0], cars)));
+                car_pos.setString("in traffic? " + std::to_string(inTraffic(LR_cars[0], cars)));
                 window.draw(car_pos);
                 cars[0]->drive();
             } 
             car_speed.setString("Cars: " + std::to_string(cars.size()));
             if (clock.getElapsedTime().asSeconds() >= 3 && cars.size() < 20) {
                 int rand_type = rand() % 4;
+                std::cout << rand_type << std::endl;
                 if (rand_type == 0) {
                     Car *c = new Car(RIGHT_LEFT_STRAIGHT, sf::Color::Red);
                     RL_cars.push_back(c);
@@ -222,18 +279,24 @@ int main()
             car_pos.setString("in traffic? " + std::to_string(inTraffic(cars[0], cars)));
             window.draw(car_pos);
             for (Car* car : cars) {
-                if ((!car->isAtLight() || green_light) && !car->isOffScreen()) {
-                    if (car->getType() == DOWN_UP_STRAIGHT && !inTraffic(car, DU_cars)
-                        || car->getType() == UP_DOWN_STRAIGHT && !inTraffic(car, UD_cars)
-                        || car->getType() == LEFT_RIGHT_STRAIGHT && !inTraffic(car, LR_cars)
-                        || car->getType() == RIGHT_LEFT_STRAIGHT && !inTraffic(car, RL_cars))
+                // if the car is not at a red light, offscreen, or in traffic, drive.
+                if (!car->isOffScreen()
+                        && ((car->getType() == DOWN_UP_STRAIGHT && (!inTraffic(car, DU_cars) 
+                            && (!car->isAtLight() || green_light["DU"])))
+                        || (car->getType() == UP_DOWN_STRAIGHT && (!inTraffic(car, UD_cars) 
+                            && (!car->isAtLight() || green_light["UD"])))
+                        || (car->getType() == LEFT_RIGHT_STRAIGHT && (!inTraffic(car, LR_cars) 
+                            && (!car->isAtLight() || green_light["LR"])))
+                        || (car->getType() == RIGHT_LEFT_STRAIGHT && (!inTraffic(car, RL_cars) 
+                            && (!car->isAtLight() || green_light["RL"]))))) {
                         car->drive();
                 }
-                else if (car->isAtLight() && car->velocity() > 0 && !green_light) {
-                    if (car->getType() == DOWN_UP_STRAIGHT && inTraffic(car, DU_cars)
-                        || car->getType() == UP_DOWN_STRAIGHT && inTraffic(car, UD_cars)
-                        || car->getType() == LEFT_RIGHT_STRAIGHT && inTraffic(car, LR_cars)
-                        || car->getType() == RIGHT_LEFT_STRAIGHT && inTraffic(car, RL_cars))
+                // if the car is at a red light, offscreen or in traffic, brake.
+                else if (car->isAtLight() || car->isOffScreen()
+                        || (car->getType() == DOWN_UP_STRAIGHT && (inTraffic(car, DU_cars) || !green_light["DU"]))
+                        || (car->getType() == UP_DOWN_STRAIGHT && (inTraffic(car, UD_cars) || !green_light["UD"]))
+                        || (car->getType() == LEFT_RIGHT_STRAIGHT && (inTraffic(car, LR_cars) || !green_light["LR"]))
+                        || (car->getType() == RIGHT_LEFT_STRAIGHT && (inTraffic(car, RL_cars) || !green_light["RL"]))) {
                         car->brake();
                 }
             }
@@ -253,7 +316,10 @@ int main()
             window.draw(car_pos);
             for (Car* car : cars)
                 window.draw(car->getShape());
-            window.draw(lights);
+            window.draw(lights["RL"]);
+            window.draw(lights["LR"]);
+            window.draw(lights["DU"]);
+            window.draw(lights["UD"]);
         } else if (crashed) {
             window.draw(crash);
         }

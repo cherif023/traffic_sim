@@ -105,13 +105,13 @@ void Car::reset() {
 
 bool Car::isAtLight() {
     if (type == RIGHT_LEFT_STRAIGHT)
-        return body.getPosition().x <= SCRWIDTH/2 + 60 && body.getPosition().x >= SCRWIDTH/2 - 60;
+        return body.getPosition().x <= SCRWIDTH/2 + 60 && body.getPosition().x >= SCRWIDTH/2 + 40;
     else if (type == LEFT_RIGHT_STRAIGHT)
-        return body.getPosition().x >= SCRWIDTH/2 - 60 && body.getPosition().x <= SCRWIDTH/2 + 60;
+        return body.getPosition().x >= SCRWIDTH/2 - 60 && body.getPosition().x <= SCRWIDTH/2 - 40;
     else if (type == DOWN_UP_STRAIGHT)
-        return body.getPosition().y <= SCRHEIGHT/2 + 60 && body.getPosition().y >= SCRHEIGHT/2 - 60;
+        return body.getPosition().y <= SCRHEIGHT/2 + 60 && body.getPosition().y >= SCRHEIGHT/2 + 40;
     else
-        return body.getPosition().y >= SCRHEIGHT/2 - 60 && body.getPosition().y <= SCRWIDTH/2 + 60;
+        return body.getPosition().y >= SCRHEIGHT/2 - 60 && body.getPosition().y <= SCRWIDTH/2 - 40;
 }
 
 bool Car::isOffScreen() {
