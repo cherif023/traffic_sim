@@ -120,16 +120,18 @@ bool Car::isOffScreen() {
 }
 
 // collision detection
-// holy jeez chick mcnuggs this ain't easy
 bool Car::crashed(Car car) {
-    return (car.x_pos() >= (body.getPosition().x - width/2)
-        && car.x_pos() <= body.getPosition().x + width/2
-        && car.y_pos() >= body.getPosition().y - width/2
-        && car.y_pos() <= body.getPosition().y + width/2);
+    return (car.x_pos() + car.getWidth()/2 >= (body.getPosition().x - width/2)
+        && car.x_pos() - car.getWidth()/2 <= body.getPosition().x + width/2
+        && car.y_pos() + car.getHeight()/2 >= body.getPosition().y - height/2
+        && car.y_pos() - car.getHeight()/2 <= body.getPosition().y + height/2);
 }
 
 bool Car::operator==(Car &lhs) {
     return id == lhs.getID();
 }
+
+int Car::getWidth() {return width;}
+int Car::getHeight() {return height;}
 
 Type Car::getType() {return type;}

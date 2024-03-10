@@ -25,6 +25,8 @@ class Car {
         bool isActive();
         bool operator==(Car &lhs);
         bool getID();
+        int getWidth();
+        int getHeight();
         Type getType();
     private:
         sf::RectangleShape body;
