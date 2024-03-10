@@ -151,7 +151,7 @@ int main()
     sf::Font roboto;
     sf::Text text;
     sf::Text crash;
-    roboto.loadFromFile("Roboto/Roboto-Regular.ttf");
+    roboto.loadFromFile("./content/Roboto/Roboto-Regular.ttf");
     text.setFont(roboto);
     crash.setFont(roboto);
     crash.setString("Car Crash!!!");
