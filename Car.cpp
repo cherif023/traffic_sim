@@ -37,7 +37,7 @@ float Car::x_pos() {return body.getPosition().x;}
 float Car::y_pos() {return body.getPosition().y;}
 float Car::velocity() {return speed;}
 bool Car::isActive() {return active;}
-bool Car::getID() {return id;}
+int Car::getID() {return id;}
 
 void Car::drive() {
     float newPos = 0;

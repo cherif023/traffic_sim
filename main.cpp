@@ -33,7 +33,7 @@ int main()
     const int SCRHEIGHT = 500;
     sf::RenderWindow window(sf::VideoMode(SCRWIDTH, SCRHEIGHT), "Traffic Simulator 2024");
     sf::Image icon = sf::Image{};
-    if (!icon.loadFromFile("nerds_logo.png")) {
+    if (!icon.loadFromFile("./content/nerds_logo.png")) {
         std::cout << "Error loading image" << std::endl;
         return 1;
     }

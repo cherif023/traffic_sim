@@ -24,7 +24,7 @@ class Car {
         bool crashed(Car car);
         bool isActive();
         bool operator==(Car &lhs);
-        bool getID();
+        int getID();
         int getWidth();
         int getHeight();
         Type getType();
