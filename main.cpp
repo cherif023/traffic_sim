@@ -136,7 +136,12 @@ int main()
     int acc = 2;
     bool start_screen = true;
     bool playing = false;
+    int score = 20;
+
+    // losing sequences
+    std::map<std::string, sf::Text> loss;
     bool crashed = false;
+    bool tooMany = false;
     
     // lights
     std::map<std::string, bool> green_light;
@@ -145,22 +150,62 @@ int main()
     green_light.insert({"UD", false});
     green_light.insert({"DU", false});
 
-    // clock
+    // clocks
     sf::Clock clock;
+    sf::Clock scoreClock;
+    sf::Clock total;
+    int totalTime;
 
+    // texts
     sf::Font roboto;
     sf::Text text;
     sf::Text crash;
+    sf::Text tooManyCars;
+    sf::Text scoreText;
+    sf::Text scoring;
+    sf::Text timer;
     roboto.loadFromFile("./content/Roboto/Roboto-Regular.ttf");
     text.setFont(roboto);
     crash.setFont(roboto);
+    tooManyCars.setFont(roboto);
+    scoreText.setFont(roboto);
+    scoring.setFont(roboto);
+    timer.setFont(roboto);
     crash.setString("Car Crash!!!");
+    tooManyCars.setString("Too many cars in line!");
+    scoring.setString("Too slow!");
+    timer.setString("You lasted 00 seconds!");
     sf::FloatRect crashRect = crash.getLocalBounds();
+    sf::FloatRect tooManyCarsRect = tooManyCars.getLocalBounds();
+    sf::FloatRect scoringRect = scoring.getLocalBounds();
+    sf::FloatRect timerRect = timer.getLocalBounds();
     crash.setOrigin(crashRect.left + crashRect.width/2.0f, crashRect.top + crashRect.height/2.0f);
     crash.setCharacterSize(24);
     crash.setStyle(sf::Text::Regular);
     crash.setFillColor(sf::Color::White);
     crash.setPosition(sf::Vector2f(SCRWIDTH/2, SCRHEIGHT/2));
+    tooManyCars.setOrigin(tooManyCarsRect.left + tooManyCarsRect.width/2.0f, tooManyCarsRect.top + tooManyCarsRect.height/2.0f);
+    tooManyCars.setCharacterSize(24);
+    tooManyCars.setStyle(sf::Text::Regular);
+    tooManyCars.setFillColor(sf::Color::White);
+    tooManyCars.setPosition(sf::Vector2f(SCRWIDTH/2, SCRHEIGHT/2));
+    scoreText.setCharacterSize(24);
+    scoreText.setStyle(sf::Text::Regular);
+    scoreText.setFillColor(sf::Color::White);
+    scoreText.setPosition(sf::Vector2f(300, 50));
+    scoring.setOrigin(scoringRect.left + scoringRect.width/2.0f, scoringRect.top + scoringRect.height/2.0f);
+    scoring.setCharacterSize(24);
+    scoring.setStyle(sf::Text::Regular);
+    scoring.setFillColor(sf::Color::White);
+    scoring.setPosition(sf::Vector2f(SCRWIDTH/2, SCRHEIGHT/2));
+    timer.setCharacterSize(24);
+    timer.setStyle(sf::Text::Regular);
+    timer.setFillColor(sf::Color::White);
+    timer.setOrigin(timerRect.left + timerRect.width/2.0f, timerRect.top + timerRect.height/2.0f);
+    timer.setPosition(sf::Vector2f(SCRWIDTH/2, SCRHEIGHT/2 + 50));
+    loss.insert({"crash",crash});
+    loss.insert({"too many cars", tooManyCars});
+    loss.insert({"low score", scoring});
 
     while (window.isOpen())
     {
@@ -217,6 +262,8 @@ int main()
         window.clear(grass);
         if (start_screen) {
             crashed = false;
+            tooMany = false;
+            score = 20;
             for (Car * c : cars) {
                 delete c;
             }
@@ -235,16 +282,19 @@ int main()
             green_light["RL"] = false;
             lights["RL"].setFillColor(sf::Color::Red);
         }
-        if (!playing)
+        if (!playing) {
             clock.restart();
-        if (playing && !crashed) {
+            scoreClock.restart();
+            total.restart();
+        }
+        if (playing && !crashed && !tooMany && score > 0) {
             if (cars.size() == 0) {
                 Car* c = new Car(LEFT_RIGHT_STRAIGHT, sf::Color::Red);
                 LR_cars.push_back(c);
                 cars.push_back(c);
                 cars[0]->drive();
             } 
-            if (clock.getElapsedTime().asSeconds() >= 1 && cars.size() < 20) {
+            if (clock.getElapsedTime().asSeconds() >= 0.5) {
                 int numTimes = rand();
                 Type last = RIGHT_LEFT_STRAIGHT;
                 Type lastlast = RIGHT_LEFT_STRAIGHT;
@@ -256,9 +306,11 @@ int main()
                     else if (numTimes % 3 == 2)
                         while (rand_type % 4 == last || rand_type % 4 == lastlast)
                             rand_type = rand();
-                    std::cout << rand_type << std::endl;
-                    std::cout << i << rand_type % 4 << last << lastlast << std::endl;
-                    if (rand_type % 4 == 0) {
+                    if (rand_type % 4 == 0 && RL_cars.size() < 7) {
+                        if (RL_cars.size() + 1 == 7 && !green_light["RL"]) {
+                            tooMany = true;
+                            break;
+                        }
                         Car *c = new Car(RIGHT_LEFT_STRAIGHT, sf::Color::Red);
                         RL_cars.push_back(c);
                         cars.push_back(c);
@@ -266,7 +318,11 @@ int main()
                             last = Type(rand_type % 4);
                         else if (i==1)
                             lastlast = Type(rand_type % 4);
-                    } else if (rand_type % 4 == 1) {
+                    } else if (rand_type % 4 == 1 && LR_cars.size() < 7) {
+                        if (LR_cars.size() + 1 == 7 && !green_light["LR"]) {
+                            tooMany = true;
+                            break;
+                        }
                         Car *c = new Car(LEFT_RIGHT_STRAIGHT, sf::Color::Green);
                         LR_cars.push_back(c);
                         cars.push_back(c);
@@ -274,7 +330,11 @@ int main()
                             last = Type(rand_type % 4);
                         else if (i==1)
                             lastlast = Type(rand_type % 4);
-                    } else if (rand_type % 4 == 2) {
+                    } else if (rand_type % 4 == 2 && UD_cars.size() < 7) {
+                        if (UD_cars.size() + 1 == 7 && !green_light["UD"]) {
+                            tooMany = true;
+                            break;
+                        }
                         Car *c = new Car(UP_DOWN_STRAIGHT, sf::Color::Yellow);
                         UD_cars.push_back(c);
                         cars.push_back(c);
@@ -282,7 +342,11 @@ int main()
                             last = Type(rand_type % 4);
                         else if (i==1)
                             lastlast = Type(rand_type % 4);
-                    } else if (rand_type % 4 == 3) {
+                    } else if (rand_type % 4 == 3 && DU_cars.size() < 7) {
+                        if (DU_cars.size() + 1 == 7 && !green_light["DU"]) {
+                            tooMany = true;
+                            break;
+                        }
                         Car *c = new Car(DOWN_UP_STRAIGHT, sf::Color::Blue);
                         DU_cars.push_back(c);
                         cars.push_back(c);
@@ -316,18 +380,17 @@ int main()
                         car->brake();
                 }
                 for (auto c:cars) {
-                    if (!(c->getID() == car->getID()) && car->crashed(*c)) {
+                    if (!(c->getType() == car->getType()) && car->crashed(*c)) {
                         crashed = true;
                         c->getShape().setFillColor(sf::Color::White);
                         car->getShape().setFillColor(sf::Color::White);
-                        std::cout << "Car crash!" << c->getType() << car->getType() << std::endl;
-                        std::cout << c->x_pos() << c->y_pos() << car->x_pos() << car->y_pos() << c->getID() << car->getID() << std::endl;
                         break;
                     }
                 }
             }
             for (size_t i = 0; i < cars.size(); i++) {
                 if (cars[i]->isOffScreen()) {
+                    score++;
                     if (cars[i]->getType() == RIGHT_LEFT_STRAIGHT) {
                         for (size_t j = 0; j < RL_cars.size(); j++) {
                             if (cars[i] == RL_cars[j])
@@ -353,6 +416,11 @@ int main()
                     cars.erase(cars.begin() + i);
                 }
             }
+            if (scoreClock.getElapsedTime().asSeconds() >= 0.3) {
+                score--;
+                scoreClock.restart();
+            }
+            scoreText.setString("Score: " + std::to_string(score));
             window.draw(road);
             window.draw(road2);
             window.draw(lane);
@@ -360,14 +428,24 @@ int main()
             window.draw(lane3);
             window.draw(lane4);
             window.draw(square);
+            window.draw(scoreText);
             for (Car* car : cars)
                 window.draw(car->getShape());
             window.draw(lights["RL"]);
             window.draw(lights["LR"]);
             window.draw(lights["DU"]);
             window.draw(lights["UD"]);
+            totalTime = total.getElapsedTime().asSeconds();
+            timer.setString("You lasted " + std::to_string(totalTime) + " seconds!");
         } else if (crashed) {
-            window.draw(crash);
+            window.draw(loss["crash"]);
+            window.draw(timer);
+        } else if (tooMany) {
+            window.draw(loss["too many cars"]);
+            window.draw(timer);
+        } else if (score <= 0) {
+            window.draw(loss["low score"]);
+            window.draw(timer);
         }
         window.display();
     }
