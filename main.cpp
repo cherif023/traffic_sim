@@ -306,8 +306,8 @@ int main()
                     else if (numTimes % 3 == 2)
                         while (rand_type % 4 == last || rand_type % 4 == lastlast)
                             rand_type = rand();
-                    if (rand_type % 4 == 0 && RL_cars.size() < 7) {
-                        if (RL_cars.size() + 1 == 7 && !green_light["RL"]) {
+                    if (rand_type % 4 == 0 && (RL_cars.size() < 6 || green_light["RL"])) {
+                        if (RL_cars.size() >= 10) {
                             tooMany = true;
                             break;
                         }
@@ -318,8 +318,8 @@ int main()
                             last = Type(rand_type % 4);
                         else if (i==1)
                             lastlast = Type(rand_type % 4);
-                    } else if (rand_type % 4 == 1 && LR_cars.size() < 7) {
-                        if (LR_cars.size() + 1 == 7 && !green_light["LR"]) {
+                    } else if (rand_type % 4 == 1 && (LR_cars.size() < 6 || green_light["LR"])) {
+                        if (LR_cars.size() >= 10) {
                             tooMany = true;
                             break;
                         }
@@ -330,8 +330,8 @@ int main()
                             last = Type(rand_type % 4);
                         else if (i==1)
                             lastlast = Type(rand_type % 4);
-                    } else if (rand_type % 4 == 2 && UD_cars.size() < 7) {
-                        if (UD_cars.size() + 1 == 7 && !green_light["UD"]) {
+                    } else if (rand_type % 4 == 2 && (UD_cars.size() < 6 || green_light["UD"])) {
+                        if (UD_cars.size() >= 11) {
                             tooMany = true;
                             break;
                         }
@@ -342,8 +342,8 @@ int main()
                             last = Type(rand_type % 4);
                         else if (i==1)
                             lastlast = Type(rand_type % 4);
-                    } else if (rand_type % 4 == 3 && DU_cars.size() < 7) {
-                        if (DU_cars.size() + 1 == 7 && !green_light["DU"]) {
+                    } else if (rand_type % 4 == 3 && (DU_cars.size() < 6 || green_light["DU"])) {
+                        if (DU_cars.size() >= 11) {
                             tooMany = true;
                             break;
                         }
