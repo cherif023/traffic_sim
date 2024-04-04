@@ -9,7 +9,8 @@ Car::Car() {
     body.setSize(sf::Vector2f(40,20));
 }
 Car::Car(Type type, sf::Color color) {
-    if (type == LEFT_RIGHT_STRAIGHT || type == RIGHT_LEFT_STRAIGHT || type == RIGHT_LEFT_TURN_RIGHT) {
+    if (type == LEFT_RIGHT_STRAIGHT || type == RIGHT_LEFT_STRAIGHT 
+        || type == RIGHT_LEFT_TURN_RIGHT || type == LEFT_RIGHT_TURN_RIGHT) {
         body.setSize(sf::Vector2f(30,16));
         body.setOrigin(sf::Vector2f(15,8));
         width = 30;
@@ -24,11 +25,11 @@ Car::Car(Type type, sf::Color color) {
     body.setFillColor(color);
     if (type == RIGHT_LEFT_STRAIGHT || type == RIGHT_LEFT_TURN_RIGHT)
         body.setPosition(sf::Vector2f(SCRWIDTH + 19,235));
-    else if (type == LEFT_RIGHT_STRAIGHT)
+    else if (type == LEFT_RIGHT_STRAIGHT || type == LEFT_RIGHT_TURN_RIGHT)
         body.setPosition(sf::Vector2f(-19, 265));
-    else if (type == DOWN_UP_STRAIGHT)
+    else if (type == DOWN_UP_STRAIGHT || type == DOWN_UP_TURN_RIGHT)
         body.setPosition(sf::Vector2f(265, SCRHEIGHT + 19));
-    else if (type == UP_DOWN_STRAIGHT)
+    else if (type == UP_DOWN_STRAIGHT || type == UP_DOWN_TURN_RIGHT)
         body.setPosition(sf::Vector2f(235, -19));
     speed = 0;
     active = false;
@@ -50,17 +51,17 @@ void Car::drive() {
         if (speed < MAX_SPEED)
             speed += ACC;
         body.setPosition(sf::Vector2f(body.getPosition().x + newPos, body.getPosition().y));
-    } else if (type == LEFT_RIGHT_STRAIGHT) {
+    } else if (type == LEFT_RIGHT_STRAIGHT || (type == LEFT_RIGHT_TURN_RIGHT && body.getPosition().x <= SCRWIDTH/2 - 40)) {
         newPos += speed;
         if (speed < MAX_SPEED)
             speed += ACC;
         body.setPosition(sf::Vector2f(body.getPosition().x + newPos, body.getPosition().y));
-    } else if (type == DOWN_UP_STRAIGHT) {
+    } else if (type == DOWN_UP_STRAIGHT || (type == DOWN_UP_TURN_RIGHT && body.getPosition().y >= SCRWIDTH/2 + 40)) {
         newPos -= speed;
         if (speed < MAX_SPEED)
             speed += ACC;
         body.setPosition(sf::Vector2f(body.getPosition().x, body.getPosition().y + newPos));
-    } else if (type == UP_DOWN_STRAIGHT) {
+    } else if (type == UP_DOWN_STRAIGHT || (type == UP_DOWN_TURN_RIGHT && body.getPosition().y <= SCRHEIGHT/2 - 40)) {
         newPos += speed;
         if (speed < MAX_SPEED)
             speed += ACC;
@@ -72,22 +73,22 @@ void Car::drive() {
 // brake the car
 void Car::brake() {
     float newPos = 0;
-    if (type == RIGHT_LEFT_STRAIGHT) {
+    if (type == RIGHT_LEFT_STRAIGHT || type == RIGHT_LEFT_TURN_RIGHT) {
         newPos -= speed;
         if (speed > 0)
             speed -= ACC;
         body.setPosition(sf::Vector2f(body.getPosition().x + newPos, body.getPosition().y));
-    } else if (type == LEFT_RIGHT_STRAIGHT) {
+    } else if (type == LEFT_RIGHT_STRAIGHT || type == LEFT_RIGHT_TURN_RIGHT) {
         newPos += speed;
         if (speed > 0)
             speed -= ACC;
         body.setPosition(sf::Vector2f(body.getPosition().x + newPos, body.getPosition().y));
-    } else if (type == DOWN_UP_STRAIGHT) {
+    } else if (type == DOWN_UP_STRAIGHT || type == DOWN_UP_TURN_RIGHT) {
         newPos -= speed;
         if (speed > 0)
             speed -= ACC;
         body.setPosition(sf::Vector2f(body.getPosition().x, body.getPosition().y + newPos));
-    } else if (type == DOWN_UP_STRAIGHT) {
+    } else if (type == UP_DOWN_STRAIGHT || type == UP_DOWN_TURN_RIGHT) {
         newPos += speed;
         if (speed > 0)
             speed -= ACC;
@@ -98,7 +99,7 @@ void Car::brake() {
 // turn the car
 void Car::turn(Type t) {
     if (t == RIGHT_LEFT_TURN_RIGHT) {
-        if (body.getRotation() < 90)
+        if (body.getRotation() < 90) {
             body.setRotation(angle*(180/pi));
             if (angle >= pi/2) {
                 body.setRotation(90);
@@ -106,6 +107,37 @@ void Car::turn(Type t) {
                 body.setPosition(sf::Vector2f(body.getPosition().x - speed*cos(angle), body.getPosition().y - speed*sin(angle)));
                 angle += pi/150;
             }
+        }
+    } else if (t == LEFT_RIGHT_TURN_RIGHT) {
+        if (body.getRotation() > -90) {
+            body.setRotation(-angle*(180/pi));
+            if (angle <= -pi/2) {
+                body.setRotation(-90);
+            } else {
+                body.setPosition(sf::Vector2f(body.getPosition().x + speed*cos(angle), body.getPosition().y - speed*sin(angle)));
+                angle -= pi/150;
+            }
+        }
+    } else if (t == DOWN_UP_TURN_RIGHT) {
+        if (body.getRotation() < 90) {
+            body.setRotation(angle*(180/pi));
+            if (angle >= pi/2) {
+                body.setRotation(90);
+            } else {
+                body.setPosition(sf::Vector2f(body.getPosition().x + speed*sin(angle), body.getPosition().y - speed*cos(angle)));
+                angle += pi/150;
+            }
+        }
+    } else if (t == UP_DOWN_TURN_RIGHT) {
+        if (body.getRotation() < 90) {
+            body.setRotation(angle*(180/pi));
+            if (angle >= pi/2) {
+                body.setRotation(-90);
+            } else {
+                body.setPosition(sf::Vector2f(body.getPosition().x - speed*sin(angle), body.getPosition().y + speed*cos(angle)));
+                angle += pi/150;
+            }
+        }
     }
 }
 
@@ -127,11 +159,11 @@ void Car::reset() {
 bool Car::isAtLight() {
     if (type == RIGHT_LEFT_STRAIGHT || type == RIGHT_LEFT_TURN_RIGHT)
         return body.getPosition().x <= SCRWIDTH/2 + 60 && body.getPosition().x >= SCRWIDTH/2 + 40;
-    else if (type == LEFT_RIGHT_STRAIGHT)
+    else if (type == LEFT_RIGHT_STRAIGHT || type == LEFT_RIGHT_TURN_RIGHT)
         return body.getPosition().x >= SCRWIDTH/2 - 60 && body.getPosition().x <= SCRWIDTH/2 - 40;
-    else if (type == DOWN_UP_STRAIGHT)
+    else if (type == DOWN_UP_STRAIGHT || type == DOWN_UP_TURN_RIGHT)
         return body.getPosition().y <= SCRHEIGHT/2 + 60 && body.getPosition().y >= SCRHEIGHT/2 + 40;
-    else if (type == UP_DOWN_STRAIGHT)
+    else if (type == UP_DOWN_STRAIGHT || type == UP_DOWN_TURN_RIGHT)
         return body.getPosition().y >= SCRHEIGHT/2 - 60 && body.getPosition().y <= SCRWIDTH/2 - 40;
     else
         return false;
@@ -163,7 +195,7 @@ bool Car::isNew() {
         return (body.getPosition().x == SCRWIDTH + 19);
     else if (type == LEFT_RIGHT_STRAIGHT || type == LEFT_RIGHT_TURN_RIGHT)
         return (body.getPosition().x == -19);
-    else if (type == DOWN_UP_STRAIGHT)
+    else if (type == DOWN_UP_STRAIGHT || type == DOWN_UP_TURN_RIGHT)
         return body.getPosition().y == SCRHEIGHT + 19;
     else
         return body.getPosition().y == -19;
