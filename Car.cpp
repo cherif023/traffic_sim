@@ -106,7 +106,7 @@ void Car::turn(Type t) {
                 body.setRotation(90);
             } else {
                 body.setPosition(sf::Vector2f(body.getPosition().x - speed*cos(angle), body.getPosition().y - speed*sin(angle)));
-                angle += pi/150;
+                angle += (pi/150) * OS_CONV_FACTOR;
             }
         }
     } else if (t == LEFT_RIGHT_TURN_RIGHT) {
@@ -116,7 +116,7 @@ void Car::turn(Type t) {
                 body.setRotation(-90);
             } else {
                 body.setPosition(sf::Vector2f(body.getPosition().x + speed*cos(angle), body.getPosition().y - speed*sin(angle)));
-                angle -= pi/150;
+                angle -= (pi/150) * OS_CONV_FACTOR;
             }
         }
     } else if (t == DOWN_UP_TURN_RIGHT) {
@@ -126,7 +126,7 @@ void Car::turn(Type t) {
                 body.setRotation(90);
             } else {
                 body.setPosition(sf::Vector2f(body.getPosition().x + speed*sin(angle), body.getPosition().y - speed*cos(angle)));
-                angle += pi/150;
+                angle += (pi/150) * OS_CONV_FACTOR;
             }
         }
     } else if (t == UP_DOWN_TURN_RIGHT) {
@@ -136,7 +136,7 @@ void Car::turn(Type t) {
                 body.setRotation(-90);
             } else {
                 body.setPosition(sf::Vector2f(body.getPosition().x - speed*sin(angle), body.getPosition().y + speed*cos(angle)));
-                angle += pi/150;
+                angle += (pi/150) * OS_CONV_FACTOR;
             }
         }
     }

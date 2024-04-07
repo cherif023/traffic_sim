@@ -51,8 +51,20 @@ class Car {
 
         // static variables
         // AHHAHAHAHAAHHAHAHA
-        static constexpr float MAX_SPEED = 0.5000000000000000069420420420420420420420420;
-        static constexpr float ACC = 0.02;
+
+        // Note:
+        // For LINUX version:
+        //      MAX_SPEED = 0.5
+        //      ACC = 0.2
+        // For WINDOWS version:
+        //      MAX_SPEED = 0.05
+        //      ACC = 0.002
+        // CONVERSION FACTOR: 0.1
+        // change variable to 0 when on linux, 0.1 when on windows.
+        static constexpr float OS_CONV_FACTOR = 0;
+
+        static constexpr float MAX_SPEED = 0.5 * OS_CONV_FACTOR;
+        static constexpr float ACC = 0.02 * OS_CONV_FACTOR;
         static const int SCRWIDTH = 500;
         static const int SCRHEIGHT = 500;
         static int counter;
