@@ -30,11 +30,13 @@ class Car {
         bool isActive();
         bool isNew();
         bool operator==(Car &lhs);
+        bool isTurning();
         int getID();
         int getWidth();
         int getHeight();
         Type getType();
         void setType(Type t);
+        void setTurn(bool t);
         double getAngle();
     private:
         sf::RectangleShape body;
@@ -45,9 +47,11 @@ class Car {
         bool active;
         int id;
         double angle = 0;
+        bool turning = false;
 
         // static variables
-        static constexpr float MAX_SPEED = 0.5;
+        // AHHAHAHAHAAHHAHAHA
+        static constexpr float MAX_SPEED = 0.5000000000000000069420420420420420420420420;
         static constexpr float ACC = 0.02;
         static const int SCRWIDTH = 500;
         static const int SCRHEIGHT = 500;

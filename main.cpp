@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <cstdlib>
+#include <stdio.h>
 
 const int SCRWIDTH = 500;
 const int SCRHEIGHT = 500;
@@ -35,10 +36,16 @@ bool inTraffic(Car* car, std::vector<Car*> &cars) {
 
 // beware
 void Akash_epic_gamer_monkeyballs_function() {
+    const char* url = "https://www.youtube.com/watch?v=Hl24v2Ovs5g";
+    std::string command = "xdg-open " + std::string(url);
+    system(command.c_str()); // Execute the command to open the URL in a browser
+    // ShellExecute(0,0, "https://www.youtube.com/watch?v=Hl24v2Ovs5g",0,0,SW_SHOW);
+    /*
     std::cout << "\n\nDays until you grow a pair of balls.\n\n";
     std::string url = "https://www.youtube.com/watch?v=Hl24v2Ovs5g";
-    std::string command = url;
+    std::string command = "open " + url;
     system(command.c_str());
+    */
     /*for (int j = 0; j < 9999; j++) {
         for (int i = 0; i < 9999; i++) {
             std::cout << i;
@@ -561,19 +568,22 @@ int main()
                         car->drive();
                 }
                 // if the car is at a red light, offscreen or in traffic, brake.
-                else if (car->isAtLight() || car->isOffScreen()
+                else if ((car->isAtLight() || car->isOffScreen()
                         || ((car->getType() == DOWN_UP_STRAIGHT || car->getType() == DOWN_UP_TURN_RIGHT) && (inTraffic(car, DU_cars) || !green_light["DU"]))
                         || ((car->getType() == UP_DOWN_STRAIGHT || car->getType() == UP_DOWN_TURN_RIGHT) && (inTraffic(car, UD_cars) || !green_light["UD"]))
                         || ((car->getType() == LEFT_RIGHT_STRAIGHT || car->getType() == LEFT_RIGHT_TURN_RIGHT) && (inTraffic(car, LR_cars) || !green_light["LR"]))
-                        || ((car->getType() == RIGHT_LEFT_STRAIGHT || car->getType() == RIGHT_LEFT_TURN_RIGHT) && (inTraffic(car, RL_cars) || !green_light["RL"]))) {
+                        || ((car->getType() == RIGHT_LEFT_STRAIGHT || car->getType() == RIGHT_LEFT_TURN_RIGHT) && (inTraffic(car, RL_cars) || !green_light["RL"])))
+                        && !car->isTurning()) {
                         car->brake();
                 }
                 // turn if car needs to turn
-                else if (car->getType() == RIGHT_LEFT_TURN_RIGHT && car->x_pos() < SCRWIDTH/2 + 40
+                else if ((car->getType() == RIGHT_LEFT_TURN_RIGHT && car->x_pos() < SCRWIDTH/2 + 40
                         || car->getType() == LEFT_RIGHT_TURN_RIGHT && car->x_pos() > SCRWIDTH/2 - 40
                         || car->getType() == DOWN_UP_TURN_RIGHT && car->y_pos() < SCRHEIGHT/2 + 40
-                        || car->getType() == UP_DOWN_TURN_RIGHT && car->y_pos() > SCRHEIGHT/2 - 40) {
+                        || car->getType() == UP_DOWN_TURN_RIGHT && car->y_pos() > SCRHEIGHT/2 - 40)
+                        || car->isTurning()) {
                     car->turn(car->getType());
+                    car->setTurn(true);
                     if (car->getShape().getRotation() == 90) {
                         if (car->getType() == RIGHT_LEFT_TURN_RIGHT) {
                             car->setType(DOWN_UP_STRAIGHT);
@@ -590,6 +600,7 @@ int main()
                                     DU_cars.erase(DU_cars.begin() + i);
                             }
                         }
+                        car->setTurn(false);
                     } else if (car->getShape().getRotation() == 270) {
                         if (car->getType() == LEFT_RIGHT_TURN_RIGHT) {
                             car->setType(UP_DOWN_STRAIGHT);
@@ -606,6 +617,7 @@ int main()
                                     UD_cars.erase(UD_cars.begin() + i);
                             }
                         }
+                        car->setTurn(false);
                     }
                 }
                 for (auto &c:cars) {
@@ -655,7 +667,7 @@ int main()
                     cars.erase(cars.begin() + i);
                 }
             }
-            if (scoreClock.getElapsedTime().asSeconds() >= 0.26) {
+            if (scoreClock.getElapsedTime().asSeconds() >= 0.27) {
                 score--;
                 if (score <= 0)
                     scoreSound.play();
@@ -697,7 +709,7 @@ int main()
 
     // uncomment this at your own risk (may cause massive lag and increase exiting timeframe dramatically)
     // The above comment is misinformation - source: trust me bro
-    Akash_epic_gamer_monkeyballs_function();
+    //Akash_epic_gamer_monkeyballs_function();
 
     return 0;
 }

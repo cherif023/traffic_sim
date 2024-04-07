@@ -98,6 +98,7 @@ void Car::brake() {
 
 // turn the car
 void Car::turn(Type t) {
+    speed = MAX_SPEED;
     if (t == RIGHT_LEFT_TURN_RIGHT) {
         if (body.getRotation() < 90) {
             body.setRotation(angle*(180/pi));
@@ -200,6 +201,8 @@ bool Car::isNew() {
     else
         return body.getPosition().y == -19;
 }
+bool Car::isTurning() {return turning;}
 Type Car::getType() {return type;}
 void Car::setType(Type t) {type = t;}
 double Car::getAngle() {return angle;}
+void Car::setTurn(bool t) {turning = t;}
