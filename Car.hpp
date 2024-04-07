@@ -60,8 +60,8 @@ class Car {
         //      MAX_SPEED = 0.05
         //      ACC = 0.002
         // CONVERSION FACTOR: 0.1
-        // change variable to 0 when on linux, 0.1 when on windows.
-        static constexpr float OS_CONV_FACTOR = 0;
+        // change variable to 1 when on linux, 0.1 when on windows.
+        static constexpr float OS_CONV_FACTOR = 1;
 
         static constexpr float MAX_SPEED = 0.5 * OS_CONV_FACTOR;
         static constexpr float ACC = 0.02 * OS_CONV_FACTOR;
