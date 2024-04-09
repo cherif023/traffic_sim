@@ -11,6 +11,7 @@
                 "C:\\Users\\Devin Saxon\\Documents\\SFML-2.6.1\\lib\\sfml-graphics.lib",
                 "C:\\Users\\Devin Saxon\\Documents\\SFML-2.6.1\\lib\\sfml-window.lib",
                 "C:\\Users\\Devin Saxon\\Documents\\SFML-2.6.1\\lib\\sfml-system.lib",
+                "C:\\Users\\Devin Saxon\\Documents\\SFML-2.6.1\\lib\\sfml-audio.lib",
                 "-I",
                 "C:\\Users\\Devin Saxon\\Documents\\SFML-2.6.1\\include",
                 "/Fe${fileDirname}\\${fileBasenameNoExtension}.exe",
