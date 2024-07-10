@@ -38,6 +38,9 @@ class Car {
         void setType(Type t);
         void setTurn(bool t);
         double getAngle();
+        static void setWindowSize(std::pair<float, float> window, float rw);
+        static float getWidthResize(float num);
+        static float getHeightResize(float num);
     private:
         sf::RectangleShape body;
         Type type;
@@ -61,11 +64,13 @@ class Car {
         //      ACC = 0.002
         // CONVERSION FACTOR: 0.1
         // change variable to 1 when on linux, 0.1 when on windows.
-        static constexpr float OS_CONV_FACTOR = 1;
+        static constexpr float OS_CONV_FACTOR = 0.1;
 
-        static constexpr float MAX_SPEED = 0.5 * OS_CONV_FACTOR;
-        static constexpr float ACC = 0.02 * OS_CONV_FACTOR;
-        static const int SCRWIDTH = 500;
-        static const int SCRHEIGHT = 500;
+        static float MAX_SPEED;
+        static float ACC;
+        static float SCRWIDTH;
+        static float SCRHEIGHT;
+        static float real_width;
+        static float scr_start;
         static int counter;
 };

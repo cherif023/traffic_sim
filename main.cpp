@@ -16,16 +16,16 @@ bool inTraffic(Car* car, std::vector<Car*> &cars) {
     bool in = false;
     for (Car * c : cars) {
         if (!(c == car)) {
-            if ((car->getType() == RIGHT_LEFT_STRAIGHT || car->getType() == RIGHT_LEFT_TURN_RIGHT) && (car->x_pos() >= c->x_pos() && car->x_pos() - 17 <= c->x_pos() + 27)) {
+            if ((car->getType() == RIGHT_LEFT_STRAIGHT || car->getType() == RIGHT_LEFT_TURN_RIGHT) && (car->x_pos() >= c->x_pos() && car->x_pos() - Car::getWidthResize(17) <= c->x_pos() + Car::getWidthResize(27))) {
                 in = true;
                 break;
-            } else if ((car->getType() == LEFT_RIGHT_STRAIGHT || car->getType() == LEFT_RIGHT_TURN_RIGHT) && (car->x_pos() <= c->x_pos() && car->x_pos() + 17 >= c->x_pos() - 27)) {
+            } else if ((car->getType() == LEFT_RIGHT_STRAIGHT || car->getType() == LEFT_RIGHT_TURN_RIGHT) && (car->x_pos() <= c->x_pos() && car->x_pos() + Car::getWidthResize(17) >= c->x_pos() - Car::getWidthResize(27))) {
                 in = true;
                 break;
-            } else if ((car->getType() == UP_DOWN_STRAIGHT || car->getType() == UP_DOWN_TURN_RIGHT) && (car->y_pos() <= c->y_pos() && car->y_pos() + 17 >= c->y_pos() - 27)) {
+            } else if ((car->getType() == UP_DOWN_STRAIGHT || car->getType() == UP_DOWN_TURN_RIGHT) && (car->y_pos() <= c->y_pos() && car->y_pos() + Car::getHeightResize(17) >= c->y_pos() - Car::getHeightResize(27))) {
                 in = true;
                 break;
-            } else if ((car->getType() == DOWN_UP_STRAIGHT || car->getType() == DOWN_UP_TURN_RIGHT) && (car->y_pos() >= c->y_pos() && car->y_pos() - 17 <= c->y_pos() + 27)) {
+            } else if ((car->getType() == DOWN_UP_STRAIGHT || car->getType() == DOWN_UP_TURN_RIGHT) && (car->y_pos() >= c->y_pos() && car->y_pos() - Car::getHeightResize(17) <= c->y_pos() + Car::getHeightResize(27))) {
                 in = true;
                 break;
             }
@@ -41,37 +41,37 @@ void Akash_epic_gamer_monkeyballs_function() {
     system(command.c_str()); // Execute the command to open the URL in a browser
     // ShellExecute(0,0, "https://www.youtube.com/watch?v=Hl24v2Ovs5g",0,0,SW_SHOW);
     /*
-    std::cout << "\n\nDays until you grow a pair of balls.\n\n";
+    //std::cout << "\n\nDays until you grow a pair of balls.\n\n";
     std::string url = "https://www.youtube.com/watch?v=Hl24v2Ovs5g";
     std::string command = "open " + url;
     system(command.c_str());
     */
     /*for (int j = 0; j < 9999; j++) {
         for (int i = 0; i < 9999; i++) {
-            std::cout << i;
+            //std::cout << i;
         }
     }*/
 }
 
 // checks to find how many cars in a given line haven't gone through the light yet
-int backedUp(std::vector<Car*> cars) {
+int backedUp(std::vector<Car*> cars, float w, float h) {
     int total = 0;
     for (auto car : cars) {
         if (car->getType() == RIGHT_LEFT_STRAIGHT || car->getType() == RIGHT_LEFT_TURN_RIGHT) {
-            if (car->x_pos() > SCRWIDTH/2)
+            if (car->x_pos() > w/2.0)
                 total++;
         }
         else if (car->getType() == LEFT_RIGHT_STRAIGHT || car->getType() == LEFT_RIGHT_TURN_RIGHT) {
-            if (car->x_pos() < SCRWIDTH/2)
+            if (car->x_pos() < w/2.0)
                 total++;
         }
         else if (car->getType() == UP_DOWN_STRAIGHT || car->getType() == UP_DOWN_TURN_RIGHT) {
-            //std::cout << "UP DOWN STRAIGHT" << std::endl;
-            if (car->y_pos() < SCRHEIGHT/2)
+            ////std::cout << "UP DOWN STRAIGHT" << std::endl;
+            if (car->y_pos() < h/2.0)
                 total++;
         }
         else {
-            if (car->y_pos() > SCRHEIGHT/2)
+            if (car->y_pos() > h/2.0)
                 total++;
         }
     }
@@ -83,84 +83,87 @@ int main()
     sf::RenderWindow window(sf::VideoMode(SCRWIDTH, SCRHEIGHT), "Traffic Simulator 2024");
     sf::Image icon = sf::Image{};
     if (!icon.loadFromFile("./content/nerds_logo.png")) {
-        std::cout << "Error loading image" << std::endl;
+        //std::cout << "Error loading image" << std::endl;
         return 1;
     }
     window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+
+    // set up the car class variables
+    Car::setWindowSize({window.getSize().x, window.getSize().y}, window.getSize().x);
 
     // colors
     sf::Color road_side(125, 125, 125);
     sf::Color grass(15,59,13);
 
+    // sidebar designs
+    sf::Texture left_bar;
+    sf::Texture right_bar;
+    if (!left_bar.loadFromFile("content/leftbar.png") || !right_bar.loadFromFile("content/rightbar.png"))
+        return -1;
+    sf::RectangleShape left_bar_rec(sf::Vector2f(0, window.getSize().y));
+    sf::RectangleShape right_bar_rec(sf::Vector2f(0, window.getSize().y));
+
     // roads
-    sf::RectangleShape road(sf::Vector2f(500, 50));
+    sf::RectangleShape road(sf::Vector2f(window.getSize().x, window.getSize().y * 0.1));
     road.setFillColor(sf::Color::Black);
     road.setOutlineColor(road_side);
     road.setOutlineThickness(3);
-    road.setOrigin(250, 25);
-    road.setPosition(250, 250);
+    road.setOrigin(window.getSize().x / 2, window.getSize().y * 0.05);
+    road.setPosition(window.getSize().x / 2, window.getSize().y / 2);
 
-    sf::RectangleShape road2(sf::Vector2f(50,500));
+    sf::RectangleShape road2(sf::Vector2f(window.getSize().x * 0.1, window.getSize().y));
     road2.setFillColor(sf::Color::Black);
     road2.setOutlineColor(road_side);
     road2.setOutlineThickness(3);
-    road2.setOrigin(25, 250);
-    road2.setPosition(250, 250);
+    road2.setOrigin(window.getSize().x * 0.05, window.getSize().y / 2);
+    road2.setPosition(window.getSize().x / 2, window.getSize().y / 2);
 
-    sf::RectangleShape square(sf::Vector2f(56,50));
-    square.setOrigin(28,25);
-    square.setPosition(250,250);
+    sf::RectangleShape square(sf::Vector2f(window.getSize().x * 0.112,window.getSize().y * 0.1));
+    square.setOrigin(window.getSize().x*0.056,window.getSize().y*0.05);
+    square.setPosition(window.getSize().x/2.0,window.getSize().y/2.0);
     square.setFillColor(sf::Color::Black);
 
     // lanes
-    sf::RectangleShape lane(sf::Vector2f(1, 500));
-    lane.setOrigin(-1, 250);
-    lane.setPosition(sf::Vector2f(250,250));
+    sf::RectangleShape lane(sf::Vector2f(window.getSize().x*0.002, window.getSize().y));
+    lane.setOrigin(window.getSize().x*-0.002, window.getSize().y/2.0);
+    lane.setPosition(sf::Vector2f(window.getSize().x/2.0,window.getSize().y/2.0));
     lane.setFillColor(sf::Color::Yellow);
-    sf::RectangleShape lane2(sf::Vector2f(500, 1));
-    lane2.setOrigin(250, -1);
-    lane2.setPosition(sf::Vector2f(250,250));
+    sf::RectangleShape lane2(sf::Vector2f(window.getSize().x, window.getSize().y*0.002));
+    lane2.setOrigin(window.getSize().x/2.0, window.getSize().y*-0.002);
+    lane2.setPosition(sf::Vector2f(window.getSize().x/2.0,window.getSize().y/2.0));
     lane2.setFillColor(sf::Color::Yellow);
-    sf::RectangleShape lane3(sf::Vector2f(1, 500));
-    lane3.setOrigin(3, 250);
-    lane3.setPosition(sf::Vector2f(250,250));
+    sf::RectangleShape lane3(sf::Vector2f(window.getSize().x*0.002, window.getSize().y));
+    lane3.setOrigin(window.getSize().x*0.006, window.getSize().y/2.0);
+    lane3.setPosition(sf::Vector2f(window.getSize().x/2.0,window.getSize().y/2.0));
     lane3.setFillColor(sf::Color::Yellow);
-    sf::RectangleShape lane4(sf::Vector2f(500, 1));
-    lane4.setOrigin(250, 3);
-    lane4.setPosition(sf::Vector2f(250,250));
+    sf::RectangleShape lane4(sf::Vector2f(window.getSize().x, window.getSize().y*0.002));
+    lane4.setOrigin(window.getSize().x/2.0, window.getSize().y*0.006);
+    lane4.setPosition(sf::Vector2f(window.getSize().x/2.0,window.getSize().y/2.0));
     lane4.setFillColor(sf::Color::Yellow);
 
     // traffic lights
-    /*
-    sf::RectangleShape lights(sf::Vector2f(56,50));
-    lights.setOrigin(28,25);
-    lights.setPosition(250,250);
-    lights.setOutlineColor(sf::Color::Red);
-    lights.setOutlineThickness(3);
-    lights.setFillColor(sf::Color::Transparent);
-    */
     std::map<std::string, sf::RectangleShape> lights;
-    sf::RectangleShape RL_light(sf::Vector2f(3,50));
-    RL_light.setOrigin(-23.5,25);
-    RL_light.setPosition(250, 250);
+    sf::RectangleShape RL_light(sf::Vector2f(window.getSize().x*0.006,window.getSize().y*0.1));
+    RL_light.setOrigin(window.getSize().x*-0.047,window.getSize().y*0.05);
+    RL_light.setPosition(window.getSize().x/2.0,window.getSize().y/2.0);
     RL_light.setOutlineColor(sf::Color::Red);
     RL_light.setFillColor(sf::Color::Red);
     lights.insert({"RL",RL_light});
-    sf::RectangleShape LR_light(sf::Vector2f(3,50));
-    LR_light.setOrigin(25,25);
-    LR_light.setPosition(250, 250);
+    sf::RectangleShape LR_light(sf::Vector2f(window.getSize().x*0.006,window.getSize().y*0.1));
+    LR_light.setOrigin(window.getSize().x*0.05,window.getSize().y*0.05);
+    LR_light.setPosition(window.getSize().x/2.0,window.getSize().y/2.0);
     LR_light.setOutlineColor(sf::Color::Red);
     LR_light.setFillColor(sf::Color::Red);
     lights.insert({"LR",LR_light});
-    sf::RectangleShape DU_light(sf::Vector2f(50,3));
-    DU_light.setOrigin(25,-23.5);
-    DU_light.setPosition(250, 250);
+    sf::RectangleShape DU_light(sf::Vector2f(window.getSize().x*0.1,window.getSize().y*0.006));
+    DU_light.setOrigin(window.getSize().x*0.05,window.getSize().y*-0.047);
+    DU_light.setPosition(window.getSize().x/2.0,window.getSize().y/2.0);
     DU_light.setOutlineColor(sf::Color::Red);
     DU_light.setFillColor(sf::Color::Red);
     lights.insert({"DU",DU_light});
-    sf::RectangleShape UD_light(sf::Vector2f(50,3));
-    UD_light.setOrigin(25,25);
-    UD_light.setPosition(250, 250);
+    sf::RectangleShape UD_light(sf::Vector2f(window.getSize().x*0.1,window.getSize().y*0.006));
+    UD_light.setOrigin(window.getSize().x*0.05,window.getSize().y*0.05);
+    UD_light.setPosition(window.getSize().x/2.0,window.getSize().y/2.0);
     UD_light.setOutlineColor(sf::Color::Red);
     UD_light.setFillColor(sf::Color::Red);
     lights.insert({"UD",UD_light});
@@ -179,6 +182,7 @@ int main()
     bool start_screen = true;
     bool playing = false;
     bool rules = false;
+    float window_x = 0; // size of playable area's width
 
     //string for rules
     std::string rls = "Welcome! Here are the rules.\n\n";
@@ -223,8 +227,6 @@ int main()
     lineSound.setBuffer(lineBuffer);
     sf::SoundBuffer loading;
     sf::Sound loaded;
-    loading.loadFromFile("content/hard.wav");
-    loaded.setBuffer(loading);
     sf::SoundBuffer background;
     sf::Sound chill;
 
@@ -237,7 +239,7 @@ int main()
     sf::Text scoring;
     sf::Text timer;
     sf::Text rulesText;
-    roboto.loadFromFile("./content/Roboto/Roboto-Regular.ttf");
+    roboto.loadFromFile("./content/Atarian/SF-Atarian-System.ttf");
     text.setFont(roboto);
     crash.setFont(roboto);
     tooManyCars.setFont(roboto);
@@ -258,12 +260,12 @@ int main()
     crash.setCharacterSize(24);
     crash.setStyle(sf::Text::Regular);
     crash.setFillColor(sf::Color::White);
-    crash.setPosition(sf::Vector2f(SCRWIDTH/2, SCRHEIGHT/2));
+    crash.setPosition(sf::Vector2f(SCRWIDTH/2.0, SCRHEIGHT/2.0));
     tooManyCars.setOrigin(tooManyCarsRect.left + tooManyCarsRect.width/2.0f, tooManyCarsRect.top + tooManyCarsRect.height/2.0f);
     tooManyCars.setCharacterSize(24);
     tooManyCars.setStyle(sf::Text::Regular);
     tooManyCars.setFillColor(sf::Color::White);
-    tooManyCars.setPosition(sf::Vector2f(SCRWIDTH/2, SCRHEIGHT/2));
+    tooManyCars.setPosition(sf::Vector2f(SCRWIDTH/2.0, SCRHEIGHT/2.0));
     scoreText.setCharacterSize(24);
     scoreText.setStyle(sf::Text::Regular);
     scoreText.setFillColor(sf::Color::White);
@@ -272,13 +274,12 @@ int main()
     scoring.setCharacterSize(24);
     scoring.setStyle(sf::Text::Regular);
     scoring.setFillColor(sf::Color::White);
-    scoring.setPosition(sf::Vector2f(SCRWIDTH/2, SCRHEIGHT/2));
+    scoring.setPosition(sf::Vector2f(SCRWIDTH/2.0, SCRHEIGHT/2.0));
     timer.setCharacterSize(24);
     timer.setStyle(sf::Text::Regular);
     timer.setFillColor(sf::Color::White);
     timer.setOrigin(timerRect.left + timerRect.width/2.0f, timerRect.top + timerRect.height/2.0f);
-    timer.setPosition(sf::Vector2f(SCRWIDTH/2, SCRHEIGHT/2 + 50));
-    rulesText.setCharacterSize(14);
+    timer.setPosition(sf::Vector2f(SCRWIDTH/2.0, SCRHEIGHT/2.0 + 50));
     rulesText.setStyle(sf::Text::Regular);
     rulesText.setFillColor(sf::Color::White);
     loss.insert({"crash",crash});
@@ -288,18 +289,104 @@ int main()
     while (window.isOpen())
     {
         sf::Event event;
-        text.setString("Traffic Simulator 2024\n\n\tPress [R] for Rules\n\n\tPress [Enter] to play");
+        text.setString("TRAFFIC SIMULATOR 2024\n\n\tpress [R] for RULES\n\n\tpress [ENTER] to PLAY");
         sf::FloatRect textRect = text.getLocalBounds();
         text.setOrigin(textRect.left + textRect.width/2.0f, textRect.top + textRect.height/2.0f);
-        text.setCharacterSize(24);
+        window.getSize().x < window.getSize().y ? text.setCharacterSize(window.getSize().x*0.048) : text.setCharacterSize(window.getSize().y*0.048);
         text.setStyle(sf::Text::Regular);
         text.setFillColor(sf::Color::White);
-        text.setPosition(sf::Vector2f(250,250));
+        text.setPosition(sf::Vector2f(window.getSize().x/2.0,window.getSize().y/2.0));
+        window.getSize().x < window.getSize().y ? rulesText.setCharacterSize(window.getSize().x*0.028) : rulesText.setCharacterSize(window.getSize().y*0.028);
+
+        float scr_start = 0; // beginning of playable area
 
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+            if (event.type == sf::Event::Resized) {
+                sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+                window.setView(sf::View(visibleArea));
+                // RESIZING
+                if (window.getSize().x > window.getSize().y) {
+                    window_x = window.getSize().y;
+                } else {
+                    window_x = window.getSize().x;
+                }
+
+                scr_start = (window.getSize().x - window_x)/2.0;
+
+                // sidebars
+                left_bar_rec.setSize(sf::Vector2f((window.getSize().x - window_x)/2.0, window.getSize().y));
+                right_bar_rec.setSize(sf::Vector2f((window.getSize().x - window_x)/2.0, window.getSize().y));
+                right_bar_rec.setPosition(sf::Vector2f((window.getSize().x - window_x)/2.0 + window_x, 0));
+                left_bar_rec.setTexture(&left_bar);
+                right_bar_rec.setTexture(&right_bar);
+
+                // car variables
+                Car::setWindowSize({window_x, window.getSize().y}, window.getSize().x);
+
+                // roads
+                road.setSize(sf::Vector2f(window_x, window.getSize().y * 0.1));
+                road.setOrigin(window_x / 2, window.getSize().y * 0.05);
+                road.setPosition(window.getSize().x / 2, window.getSize().y / 2);
+
+                road2.setSize(sf::Vector2f(window_x * 0.1, window.getSize().y));
+                road2.setOrigin(window_x * 0.05, window.getSize().y / 2);
+                road2.setPosition(window.getSize().x / 2, window.getSize().y / 2);
+
+                square.setSize(sf::Vector2f(window_x * 0.112,window.getSize().y * 0.1));
+                square.setOrigin(window_x*0.056,window.getSize().y*0.05);
+                square.setPosition(window.getSize().x/2.0,window.getSize().y/2.0);
+
+                // lanes
+                lane.setSize(sf::Vector2f(window_x*0.002, window.getSize().y));
+                lane.setOrigin(window_x*-0.002, window.getSize().y/2.0);
+                lane.setPosition(sf::Vector2f(window.getSize().x/2.0,window.getSize().y/2.0));
+                lane2.setSize(sf::Vector2f(window_x, window.getSize().y*0.002));
+                lane2.setOrigin(window_x/2.0, window.getSize().y*-0.002);
+                lane2.setPosition(sf::Vector2f(window.getSize().x/2.0,window.getSize().y/2.0));
+                lane3.setSize(sf::Vector2f(window_x*0.002, window.getSize().y));
+                lane3.setOrigin(window_x*0.006, window.getSize().y/2.0);
+                lane3.setPosition(sf::Vector2f(window.getSize().x/2.0,window.getSize().y/2.0));
+                lane4.setSize(sf::Vector2f(window_x, window.getSize().y*0.002));
+                lane4.setOrigin(window_x/2.0, window.getSize().y*0.006);
+                lane4.setPosition(sf::Vector2f(window.getSize().x/2.0,window.getSize().y/2.0));
+
+                // traffic lights
+                lights["RL"].setSize(sf::Vector2f(window_x*0.006,window.getSize().y*0.1));
+                lights["RL"].setOrigin(window_x*-0.047,window.getSize().y*0.05);
+                lights["RL"].setPosition(window.getSize().x/2.0,window.getSize().y/2.0);
+                lights["LR"].setSize(sf::Vector2f(window_x*0.006,window.getSize().y*0.1));
+                lights["LR"].setOrigin(window_x*0.05,window.getSize().y*0.05);
+                lights["LR"].setPosition(window.getSize().x/2.0,window.getSize().y/2.0);
+                lights["DU"].setSize(sf::Vector2f(window_x*0.1,window.getSize().y*0.006));
+                lights["DU"].setOrigin(window_x*0.05,window.getSize().y*-0.047);
+                lights["DU"].setPosition(window.getSize().x/2.0,window.getSize().y/2.0);
+                lights["UD"].setSize(sf::Vector2f(window_x*0.1,window.getSize().y*0.006));
+                lights["UD"].setOrigin(window_x*0.05,window.getSize().y*0.05);
+                lights["UD"].setPosition(window.getSize().x/2.0,window.getSize().y/2.0);
+
+                // text
+                float size = 0;
+                window.getSize().x < window.getSize().y ? size = window.getSize().x*0.048 : size = window.getSize().y*0.048;
+                timer.setCharacterSize(size);
+                timer.setPosition(sf::Vector2f(window.getSize().x/2.0, window.getSize().y/2.0 + Car::getHeightResize(50)));
+                loss["low score"].setCharacterSize(size);
+                loss["low score"].setPosition(sf::Vector2f(window.getSize().x/2.0, window.getSize().y/2.0));
+                scoreText.setCharacterSize(size);
+                scoreText.setPosition(sf::Vector2f(scr_start + Car::getWidthResize(300), Car::getHeightResize(50)));
+                loss["too many cars"].setCharacterSize(size);
+                loss["too many cars"].setPosition(sf::Vector2f(window.getSize().x/2.0, window.getSize().y/2.0));
+                loss["crash"].setCharacterSize(size);
+                loss["crash"].setPosition(sf::Vector2f(window.getSize().x/2.0, window.getSize().y/2.0));
+
+                if (playing) {
+                    playing = false;
+                    start_screen = true;
+                }
+                
+            }
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter && start_screen) {
                 start_screen = false;
                 playing = true;
@@ -364,8 +451,19 @@ int main()
             lights["LR"].setFillColor(sf::Color::Red);
             green_light["RL"] = false;
             lights["RL"].setFillColor(sf::Color::Red);
-            if (loaded.getStatus() == sf::Sound::Stopped)
+            int choose_the_beat = rand() % 4;
+            if (loaded.getStatus() == sf::Sound::Stopped) {
+                if (choose_the_beat == 0) {
+                    loading.loadFromFile("content/hard.wav");
+                } else {
+                    loading.loadFromFile("content/passion-127011.wav");
+                }
+                loaded.setBuffer(loading);
+                if (choose_the_beat != 0) {
+                    loaded.setVolume(50);
+                }
                 loaded.play();
+            }
         }
         if (!playing) {
             clock.restart();
@@ -373,6 +471,8 @@ int main()
             total.restart();
             chill.stop();
         }
+        // for final gameplay, use: playing && !crashed && !tooMany && score > 0
+        //for testing, just use playing
         if (playing && !crashed && !tooMany && score > 0) {
             crashing.stop();
             scoreSound.stop();
@@ -389,7 +489,7 @@ int main()
                 chill.play();
             }
             if (cars.size() == 0) {
-                Car* c = new Car(UP_DOWN_TURN_RIGHT, sf::Color::Red);
+                Car* c = new Car(UP_DOWN_STRAIGHT, sf::Color::Red);
                 UD_cars.push_back(c);
                 cars.push_back(c);
                 cars[0]->drive();
@@ -397,12 +497,14 @@ int main()
             // spawn mechanics
             if (clock.getElapsedTime().asSeconds() >= 0.5 && cars.size() <= 20) {
                 int limit = 7;
+                // for testing with one car, set below to -1
+                // for gameplay, set to rand();
                 int numTimes = rand();
                 Type last = RIGHT_LEFT_STRAIGHT;
                 Type lastlast = RIGHT_LEFT_STRAIGHT;
-                std::cout << "times: " << numTimes % 3 << std::endl;
+                //std::cout << "times: " << numTimes % 3 << std::endl;
                 for (int i = 0; i <= numTimes % 3; i++) {
-                    std::cout << "time: " << i << std::endl;
+                    //std::cout << "time: " << i << std::endl;
                     int rand_type = rand() % 6;
                     if (i == 1)
                         if (last == Type(0) || last == Type(4)) {
@@ -431,9 +533,9 @@ int main()
                                 rand_type = rand() % 6;
                             }
                         }
-                    if (rand_type == 0 && (backedUp(RL_cars) <= limit)) {
-                        if (backedUp(RL_cars) >= limit - 1) {
-                            std::cout << "RL backed up! " << RL_cars.size() << std::endl;
+                    if (rand_type == 0 && (backedUp(RL_cars, window.getSize().x, window.getSize().y) <= limit)) {
+                        if (backedUp(RL_cars, window.getSize().x, window.getSize().y) >= limit - 1) {
+                            //std::cout << "RL backed up! " << RL_cars.size() << std::endl;
                             tooMany = true;
                             lineSound.play();
                             break;
@@ -441,15 +543,15 @@ int main()
                         Car *c = new Car(RIGHT_LEFT_STRAIGHT, sf::Color::Red);
                         RL_cars.push_back(c);
                         cars.push_back(c);
-                        std::cout << "RL " << RL_cars.size() << std::endl;
-                        std::cout << "Backed up: " << backedUp(RL_cars) << std::endl;
+                        //std::cout << "RL " << RL_cars.size() << std::endl;
+                        //std::cout << "Backed up: " << backedUp(RL_cars, window.getSize().x, window.getSize().y) << std::endl;
                         if (i==0)
                             last = Type(rand_type);
                         else if (i==1)
                             lastlast = Type(rand_type);
-                    } else if (rand_type == 1 && (backedUp(LR_cars) <= limit)) {
-                        if (backedUp(LR_cars) >= limit - 1) {
-                            std::cout << "LR backed up! " << LR_cars.size() << std::endl;
+                    } else if (rand_type == 1 && (backedUp(LR_cars, window.getSize().x, window.getSize().y) <= limit)) {
+                        if (backedUp(LR_cars, window.getSize().x, window.getSize().y) >= limit - 1) {
+                            //std::cout << "LR backed up! " << LR_cars.size() << std::endl;
                             tooMany = true;
                             lineSound.play();
                             break;
@@ -457,16 +559,16 @@ int main()
                         Car *c = new Car(LEFT_RIGHT_STRAIGHT, sf::Color::Green);
                         LR_cars.push_back(c);
                         cars.push_back(c);
-                        std::cout << "spawning LR " << LR_cars.size() << std::endl;
-                        std::cout << "LR in traffic? " << inTraffic(c, LR_cars) << std::endl;
-                        std::cout << "Backed up: " << backedUp(LR_cars) << std::endl;
+                        //std::cout << "spawning LR " << LR_cars.size() << std::endl;
+                        //std::cout << "LR in traffic? " << inTraffic(c, LR_cars) << std::endl;
+                        //std::cout << "Backed up: " << backedUp(LR_cars, window.getSize().x, window.getSize().y) << std::endl;
                         if (i==0)
                             last = Type(rand_type);
                         else if (i==1)
                             lastlast = Type(rand_type);
-                    } else if (rand_type == 2 && (backedUp(UD_cars) <= limit)) {
-                        if (backedUp(UD_cars) >= limit - 1) {
-                            std::cout << "UD backed up!" << std::endl;
+                    } else if (rand_type == 2 && (backedUp(UD_cars, window.getSize().x, window.getSize().y) <= limit)) {
+                        if (backedUp(UD_cars, window.getSize().x, window.getSize().y) >= limit - 1) {
+                            //std::cout << "UD backed up!" << std::endl;
                             tooMany = true;
                             lineSound.play();
                             break;
@@ -480,15 +582,15 @@ int main()
                         }
                         UD_cars.push_back(c);
                         cars.push_back(c);
-                        std::cout << rand_type << " spawned UD " << UD_cars.size() << std::endl;
-                        std::cout << "Backed up: " << backedUp(UD_cars) << std::endl;
+                        //std::cout << rand_type << " spawned UD " << UD_cars.size() << std::endl;
+                        //std::cout << "Backed up: " << backedUp(UD_cars, window.getSize().x, window.getSize().y) << std::endl;
                         if (i==0)
                             last = Type(rand_type);
                         else if (i==1)
                             lastlast = Type(rand_type);
-                    } else if (rand_type == 3 && (backedUp(DU_cars) <= limit)) {
-                        if (backedUp(DU_cars) >= limit - 1) {
-                            std::cout << "DU backed up! " << DU_cars.size() << std::endl;
+                    } else if (rand_type == 3 && (backedUp(DU_cars, window.getSize().x, window.getSize().y) <= limit)) {
+                        if (backedUp(DU_cars, window.getSize().x, window.getSize().y) >= limit - 1) {
+                            //std::cout << "DU backed up! " << DU_cars.size() << std::endl;
                             tooMany = true;
                             lineSound.play();
                             break;
@@ -502,15 +604,15 @@ int main()
                         }
                         DU_cars.push_back(c);
                         cars.push_back(c);
-                        std::cout << "DU " << DU_cars.size() << std::endl;
-                        std::cout << "Backed up: " << backedUp(DU_cars) << std::endl;
+                        //std::cout << "DU " << DU_cars.size() << std::endl;
+                        //std::cout << "Backed up: " << backedUp(DU_cars, window.getSize().x, window.getSize().y) << std::endl;
                         if (i==0)
                             last = Type(rand_type);
                         else if (i==1)
                             lastlast = Type(rand_type);
-                    } else if (rand_type == 4 && (backedUp(RL_cars) <= limit)) {
-                        if (backedUp(RL_cars) >= limit - 1) {
-                            std::cout << "RL backed up!" << std::endl;
+                    } else if (rand_type == 4 && (backedUp(RL_cars, window.getSize().x, window.getSize().y) <= limit)) {
+                        if (backedUp(RL_cars, window.getSize().x, window.getSize().y) >= limit - 1) {
+                            //std::cout << "RL backed up!" << std::endl;
                             tooMany = true;
                             lineSound.play();
                             break;
@@ -518,29 +620,29 @@ int main()
                         Car *c = new Car(RIGHT_LEFT_TURN_RIGHT, sf::Color::Blue);
                         RL_cars.push_back(c);
                         cars.push_back(c);
-                        std::cout << "RL " << RL_cars.size() << std::endl;
+                        //std::cout << "RL " << RL_cars.size() << std::endl;
                         if (i==0)
                             last = Type(rand_type);
                         else if (i==1)
                             lastlast = Type(rand_type);
-                    } else if (rand_type == 5 && (backedUp(LR_cars) <= limit)) {
-                        if (backedUp(LR_cars) >= limit - 1) {
+                    } else if (rand_type == 5 && (backedUp(LR_cars, window.getSize().x, window.getSize().y) <= limit)) {
+                        if (backedUp(LR_cars, window.getSize().x, window.getSize().y) >= limit - 1) {
                             tooMany = true;
                             lineSound.play();
-                            std::cout << "LR backed up!" << std::endl;
+                            //std::cout << "LR backed up!" << std::endl;
                             break;
                         }
                         Car *c = new Car(LEFT_RIGHT_TURN_RIGHT, sf::Color::Yellow);
                         LR_cars.push_back(c);
                         cars.push_back(c);
-                        std::cout << "LR TURN " << LR_cars.size() << std::endl;
-                        std::cout << "LR in traffic? " << inTraffic(c, LR_cars) << std::endl;
-                        std::cout << "rand_type = " << rand_type << Type(rand_type) << std::endl;
+                        //std::cout << "LR TURN " << LR_cars.size() << std::endl;
+                        //std::cout << "LR in traffic? " << inTraffic(c, LR_cars) << std::endl;
+                        //std::cout << "rand_type = " << rand_type << Type(rand_type) << std::endl;
                         if (i==0)
                             last = Type(rand_type);
                         else if (i==1) {
                             lastlast = Type(rand_type);
-                            std::cout << "running, lastlast = " << lastlast << std::endl;
+                            //std::cout << "running, lastlast = " << lastlast << std::endl;
                         }
                     }
                 }
@@ -558,13 +660,13 @@ int main()
                         || (car->getType() == RIGHT_LEFT_STRAIGHT && (!inTraffic(car, RL_cars) 
                             && (!car->isAtLight() || green_light["RL"])))
                         || (car->getType() == RIGHT_LEFT_TURN_RIGHT && (!inTraffic(car, RL_cars)
-                            && (!car->isAtLight() || green_light["RL"]) && car->x_pos() >= SCRWIDTH/2 + 40)))
+                            && (!car->isAtLight() || green_light["RL"]) && car->x_pos() >= window.getSize().x/2.0 + Car::getWidthResize(40))))
                         || (car->getType() == LEFT_RIGHT_TURN_RIGHT && (!inTraffic(car, LR_cars)
-                            && (!car->isAtLight() || green_light["LR"]) && car->x_pos() <= SCRWIDTH/2 - 40))
+                            && (!car->isAtLight() || green_light["LR"]) && car->x_pos() <= window.getSize().x/2.0 - Car::getWidthResize(40)))
                         || (car->getType() == DOWN_UP_TURN_RIGHT && (!inTraffic(car, DU_cars)
-                            && (!car->isAtLight() || green_light["DU"]) && car->y_pos() >= SCRHEIGHT/2 + 40))
+                            && (!car->isAtLight() || green_light["DU"]) && car->y_pos() >= window.getSize().y/2.0 + Car::getHeightResize(40)))
                         || (car->getType() == UP_DOWN_TURN_RIGHT && (!inTraffic(car, UD_cars)
-                            && (!car->isAtLight() || green_light["UD"]) && car->y_pos() <= SCRHEIGHT/2 - 40))) {
+                            && (!car->isAtLight() || green_light["UD"]) && car->y_pos() <= window.getSize().y/2.0 - Car::getHeightResize(40)))) {
                         car->drive();
                 }
                 // if the car is at a red light, offscreen or in traffic, brake.
@@ -577,10 +679,10 @@ int main()
                         car->brake();
                 }
                 // turn if car needs to turn
-                else if ((car->getType() == RIGHT_LEFT_TURN_RIGHT && car->x_pos() < SCRWIDTH/2 + 40
-                        || car->getType() == LEFT_RIGHT_TURN_RIGHT && car->x_pos() > SCRWIDTH/2 - 40
-                        || car->getType() == DOWN_UP_TURN_RIGHT && car->y_pos() < SCRHEIGHT/2 + 40
-                        || car->getType() == UP_DOWN_TURN_RIGHT && car->y_pos() > SCRHEIGHT/2 - 40)
+                else if ((car->getType() == RIGHT_LEFT_TURN_RIGHT && car->x_pos() <= window.getSize().x/2.0 + Car::getWidthResize(40)
+                        || car->getType() == LEFT_RIGHT_TURN_RIGHT && car->x_pos() >= window.getSize().x/2.0 - Car::getWidthResize(40)
+                        || car->getType() == DOWN_UP_TURN_RIGHT && car->y_pos() <= window.getSize().y/2.0 + Car::getHeightResize(40)
+                        || car->getType() == UP_DOWN_TURN_RIGHT && car->y_pos() >= window.getSize().y/2.0 - Car::getHeightResize(40))
                         || car->isTurning()) {
                     car->turn(car->getType());
                     car->setTurn(true);
@@ -623,10 +725,10 @@ int main()
                 for (auto &c:cars) {
                     if (!(c == car) && car->crashed(*c)) {
                         crashed = true;
-                        std::cout << c->getID() << " " << car->getID() << std::endl;
-                        std::cout << "Car crash! " << car->getType() << c->getType() << std::endl;
-                        std::cout << car->x_pos() << car->y_pos() << c->x_pos() << c->y_pos() << std::endl;
-                        std::cout << car->isNew() << c->isNew() << std::endl;
+                        //std::cout << c->getID() << " " << car->getID() << std::endl;
+                        //std::cout << "Car crash! " << car->getType() << c->getType() << std::endl;
+                        //std::cout << car->x_pos() << car->y_pos() << c->x_pos() << c->y_pos() << std::endl;
+                        //std::cout << car->isNew() << c->isNew() << std::endl;
                         int meme = rand() % 10;
                         if (meme == 0)
                             crashBuffer.loadFromFile("content/crashing.wav");
@@ -688,6 +790,8 @@ int main()
             window.draw(lights["LR"]);
             window.draw(lights["DU"]);
             window.draw(lights["UD"]);
+            window.draw(left_bar_rec);
+            window.draw(right_bar_rec);
             totalTime = total.getElapsedTime().asSeconds();
             timer.setString("You lasted " + std::to_string(totalTime) + " seconds!");
         } else if (crashed) {
